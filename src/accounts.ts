@@ -28,6 +28,17 @@ function metadataPath(name: string): string {
 	return path.join(profileDir(name), "metadata.json");
 }
 
+// ── Profile name validation ───────────────────────────────────────────────────
+//
+// Profile names become directory names under ACCOUNTS_DIR. Without a strict
+// guard, `path.join(ACCOUNTS_DIR, name)` can be coerced past the sandbox via
+// `..` or absolute paths, leaking OAuth refresh tokens.
+const PROFILE_NAME_RE = /^[a-zA-Z0-9_-]+$/;
+
+function isValidProfileName(name: string): boolean {
+	return typeof name === "string" && PROFILE_NAME_RE.test(name);
+}
+
 // ── Ensure profile dir exists with secure perms ────────────────────────────────
 
 async function ensureDir(dir: string, mode: number = 0o700): Promise<void> {
@@ -72,8 +83,8 @@ export async function listProfiles(): Promise<ProfileInfo[]> {
 // ── Backup current account as a named profile ──────────────────────────────────
 
 export async function backupProfile(name: string): Promise<{ ok: true; email: string } | { ok: false; error: string }> {
-	if (!name || name.startsWith(".")) {
-		return { ok: false, error: "Invalid profile name." };
+	if (!isValidProfileName(name)) {
+		return { ok: false, error: "Invalid profile name. Use only letters, numbers, hyphens, and underscores." };
 	}
 
 	try {
@@ -121,8 +132,8 @@ export async function backupProfile(name: string): Promise<{ ok: true; email: st
 // ── Switch to a named profile ──────────────────────────────────────────────────
 
 export async function switchProfile(name: string): Promise<{ ok: true; email: string } | { ok: false; error: string }> {
-	if (!name || name.startsWith(".")) {
-		return { ok: false, error: "Invalid profile name." };
+	if (!isValidProfileName(name)) {
+		return { ok: false, error: "Invalid profile name. Use only letters, numbers, hyphens, and underscores." };
 	}
 
 	const srcDir = profileDir(name);
@@ -150,9 +161,9 @@ export async function switchProfile(name: string): Promise<{ ok: true; email: st
 			return { ok: false, error: "Profile's google_accounts.json is missing or invalid." };
 		}
 
-		// Copy profile files into ~/.gemini/
-		await fs.promises.copyFile(profileAccountsPath, googleAccountsPath());
-		await fs.promises.chmod(googleAccountsPath(), 0o600);
+		// Write validated content to ~/.gemini/ — single atomic write closes the
+		// TOCTOU window between validation and the copy that would re-read disk.
+		await fs.promises.writeFile(googleAccountsPath(), raw, { mode: 0o600, encoding: "utf-8" });
 
 		const profileOauthPath = path.join(srcDir, "oauth_creds.json");
 		try {
