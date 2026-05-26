@@ -1,4 +1,4 @@
-import { getMarkdownTheme } from "@earendil-works/pi-coding-agent";
+import { getMarkdownTheme, keyText } from "@earendil-works/pi-coding-agent";
 import { Container, Markdown, Spacer, Text } from "@earendil-works/pi-tui";
 import type { AgyToolDetails } from "./types";
 
@@ -89,7 +89,8 @@ export function renderResult(result: any, { expanded }: any, theme: any): any {
 
 	let out = headerLine;
 	if (text) out += `\n${theme.fg("toolOutput", previewText)}`;
-	out += `\n${theme.fg("muted", "(Ctrl+O to expand)")}`;
+	out += `
+${theme.fg("muted", `(${keyText("app.tools.expand")} to expand)`)}`;
 
 	return new Text(out, 0, 0);
 }
