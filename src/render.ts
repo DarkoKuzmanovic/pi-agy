@@ -18,12 +18,15 @@ export function renderCall(args: any, theme: any): any {
 	const toolName = getToolLabel(args);
 	const modelLabel = "flash-3.5-high";
 
-	let text = theme.fg("toolTitle", theme.bold(`\u26a1 ${toolName} `)) + theme.fg("accent", `[${modelLabel}]`);
+	let text =
+		theme.fg("toolTitle", theme.bold(`\u26a1 ${toolName} `)) +
+		theme.fg("accent", `[${modelLabel}]`);
 
 	// For prompt tools, show the prompt preview
 	if (args.prompt) {
 		const prompt = String(args.prompt ?? "");
-		const preview = prompt.length > 80 ? `${prompt.slice(0, 80)}\u2026` : prompt;
+		const preview =
+			prompt.length > 80 ? `${prompt.slice(0, 80)}\u2026` : prompt;
 		text += `\n  ${theme.fg("dim", preview)}`;
 	}
 
@@ -49,13 +52,17 @@ export function renderCall(args: any, theme: any): any {
 /** Shared renderResult for all agy tools. */
 export function renderResult(result: any, { expanded }: any, theme: any): any {
 	const details = result.details as AgyToolDetails | undefined;
-	const text = result.content[0]?.type === "text" ? result.content[0].text : "(no output)";
+	const text =
+		result.content[0]?.type === "text" ? result.content[0].text : "(no output)";
 
 	const metaParts: string[] = [];
 	if (details?.model) metaParts.push(details.model);
-	if (details?.durationMs) metaParts.push(`${(details.durationMs / 1000).toFixed(1)}s`);
+	if (details?.durationMs)
+		metaParts.push(`${(details.durationMs / 1000).toFixed(1)}s`);
 	if (details?.account) metaParts.push(details.account);
-	const meta = metaParts.length ? `  ${metaParts.map((p) => theme.fg("dim", p)).join("  ")}` : "";
+	const meta = metaParts.length
+		? `  ${metaParts.map((p) => theme.fg("dim", p)).join("  ")}`
+		: "";
 
 	if (result.isError) {
 		return new Text(
@@ -77,7 +84,13 @@ export function renderResult(result: any, { expanded }: any, theme: any): any {
 		container.addChild(new Text(headerLine, 0, 0));
 		if (text) {
 			container.addChild(new Spacer(1));
-			container.addChild(new Text(theme.fg("muted", "\u2500\u2500\u2500 Response \u2500\u2500\u2500"), 0, 0));
+			container.addChild(
+				new Text(
+					theme.fg("muted", "\u2500\u2500\u2500 Response \u2500\u2500\u2500"),
+					0,
+					0,
+				),
+			);
 			container.addChild(new Markdown(text.trim(), 0, 0, mdTheme));
 		}
 		return container;
@@ -85,7 +98,8 @@ export function renderResult(result: any, { expanded }: any, theme: any): any {
 
 	// Collapsed view
 	const previewLines = text.split("\n").slice(0, 6);
-	const previewText = previewLines.join("\n") + (text.split("\n").length > 6 ? "\n\u2026" : "");
+	const previewText =
+		previewLines.join("\n") + (text.split("\n").length > 6 ? "\n\u2026" : "");
 
 	let out = headerLine;
 	if (text) out += `\n${theme.fg("toolOutput", previewText)}`;

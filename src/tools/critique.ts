@@ -11,19 +11,32 @@ export async function executeCritique(
 	signal: AbortSignal | undefined,
 	onUpdate: any,
 	ctx: any,
-): Promise<{ content: Array<{ type: string; text: string }>; details: AgyToolDetails; isError: boolean }> {
+): Promise<{
+	content: Array<{ type: string; text: string }>;
+	details: AgyToolDetails;
+	isError: boolean;
+}> {
 	const workDir = params.cwd ?? ctx.cwd;
 	const focus = params.focus ?? "general";
 	const timeoutSec = params.timeoutSec ?? 120;
 
-	const absPath = path.isAbsolute(params.targetFile) ? params.targetFile : path.join(workDir, params.targetFile);
+	const absPath = path.isAbsolute(params.targetFile)
+		? params.targetFile
+		: path.join(workDir, params.targetFile);
 	let fileContent: string;
 	try {
 		fileContent = await fs.promises.readFile(absPath, "utf-8");
 	} catch (err) {
 		return {
-			content: [{ type: "text", text: `Cannot read file: ${(err as Error).message}` }],
-			details: { durationMs: 0, account: null, exitCode: 1, model: "gemini-3.5-flash-high" },
+			content: [
+				{ type: "text", text: `Cannot read file: ${(err as Error).message}` },
+			],
+			details: {
+				durationMs: 0,
+				account: null,
+				exitCode: 1,
+				model: "gemini-3.5-flash-high",
+			},
 			isError: true,
 		};
 	}
@@ -45,7 +58,8 @@ export async function executeCritique(
 		timeoutSec,
 		signal,
 		onProgress: onUpdate
-			? (status: string) => onUpdate({ content: [{ type: "text" as const, text: status }] })
+			? (status: string) =>
+					onUpdate({ content: [{ type: "text" as const, text: status }] })
 			: undefined,
 	});
 
@@ -61,11 +75,19 @@ export async function executeCritique(
 	});
 
 	const isError = result.isError;
-	const responseText = isError && !result.text ? result.stderr || "(agy exited with no output)" : result.text;
+	const responseText =
+		isError && !result.text
+			? result.stderr || "(agy exited with no output)"
+			: result.text;
 
 	return {
 		content: [{ type: "text", text: responseText }],
-		details: { durationMs: result.durationMs, account, exitCode: result.exitCode, model: "gemini-3.5-flash-high" },
+		details: {
+			durationMs: result.durationMs,
+			account,
+			exitCode: result.exitCode,
+			model: "gemini-3.5-flash-high",
+		},
 		isError,
 	};
 }

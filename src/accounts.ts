@@ -5,7 +5,14 @@ import type { ProfileInfo } from "./types";
 
 // ── Storage paths ──────────────────────────────────────────────────────────────
 
-const ACCOUNTS_DIR = path.join(os.homedir(), ".pi", "agy-accounts");
+const ACCOUNTS_DIR = path.join(
+	os.homedir(),
+	".pi",
+	"agent",
+	"cache",
+	"pi-agy",
+	"accounts",
+);
 const GEMINI_DIR = path.join(os.homedir(), ".gemini");
 
 function googleAccountsPath(): string {
@@ -61,7 +68,9 @@ export function getCurrentAccount(): string | null {
 
 export async function listProfiles(): Promise<ProfileInfo[]> {
 	try {
-		const entries = await fs.promises.readdir(ACCOUNTS_DIR, { withFileTypes: true });
+		const entries = await fs.promises.readdir(ACCOUNTS_DIR, {
+			withFileTypes: true,
+		});
 		const results: ProfileInfo[] = [];
 		for (const entry of entries) {
 			if (!entry.isDirectory() || entry.name.startsWith(".")) continue;
@@ -71,7 +80,11 @@ export async function listProfiles(): Promise<ProfileInfo[]> {
 				const meta = JSON.parse(raw) as ProfileInfo;
 				results.push(meta);
 			} catch {
-				results.push({ name: entry.name, email: "(unknown)", backedUpAt: "(unknown)" });
+				results.push({
+					name: entry.name,
+					email: "(unknown)",
+					backedUpAt: "(unknown)",
+				});
 			}
 		}
 		return results;
@@ -82,15 +95,24 @@ export async function listProfiles(): Promise<ProfileInfo[]> {
 
 // ── Backup current account as a named profile ──────────────────────────────────
 
-export async function backupProfile(name: string): Promise<{ ok: true; email: string } | { ok: false; error: string }> {
+export async function backupProfile(
+	name: string,
+): Promise<{ ok: true; email: string } | { ok: false; error: string }> {
 	if (!isValidProfileName(name)) {
-		return { ok: false, error: "Invalid profile name. Use only letters, numbers, hyphens, and underscores." };
+		return {
+			ok: false,
+			error:
+				"Invalid profile name. Use only letters, numbers, hyphens, and underscores.",
+		};
 	}
 
 	try {
 		const current = getCurrentAccount();
 		if (!current) {
-			return { ok: false, error: "No active account found in ~/.gemini/google_accounts.json." };
+			return {
+				ok: false,
+				error: "No active account found in ~/.gemini/google_accounts.json.",
+			};
 		}
 
 		const destDir = profileDir(name);
@@ -117,7 +139,11 @@ export async function backupProfile(name: string): Promise<{ ok: true; email: st
 			email: current,
 			backedUpAt: new Date().toISOString(),
 		};
-		await fs.promises.writeFile(metadataPath(name), JSON.stringify(meta, null, 2), "utf-8");
+		await fs.promises.writeFile(
+			metadataPath(name),
+			JSON.stringify(meta, null, 2),
+			"utf-8",
+		);
 
 		return { ok: true, email: current };
 	} catch (err) {
@@ -127,24 +153,39 @@ export async function backupProfile(name: string): Promise<{ ok: true; email: st
 
 // ── Switch to a named profile ──────────────────────────────────────────────────
 
-export async function switchProfile(name: string): Promise<{ ok: true; email: string } | { ok: false; error: string }> {
+export async function switchProfile(
+	name: string,
+): Promise<{ ok: true; email: string } | { ok: false; error: string }> {
 	if (!isValidProfileName(name)) {
-		return { ok: false, error: "Invalid profile name. Use only letters, numbers, hyphens, and underscores." };
+		return {
+			ok: false,
+			error:
+				"Invalid profile name. Use only letters, numbers, hyphens, and underscores.",
+		};
 	}
 
 	const srcDir = profileDir(name);
 	try {
 		await fs.promises.access(srcDir);
 	} catch {
-		return { ok: false, error: `Profile '${name}' not found. Use agy_account action:backup first.` };
+		return {
+			ok: false,
+			error: `Profile '${name}' not found. Use agy_account action:backup first.`,
+		};
 	}
 
 	try {
 		// Auto-snapshot current state to .last-active/
 		await ensureDir(lastActiveDir());
 		try {
-			await fs.promises.copyFile(googleAccountsPath(), path.join(lastActiveDir(), "google_accounts.json"));
-			await fs.promises.copyFile(oauthCredsPath(), path.join(lastActiveDir(), "oauth_creds.json"));
+			await fs.promises.copyFile(
+				googleAccountsPath(),
+				path.join(lastActiveDir(), "google_accounts.json"),
+			);
+			await fs.promises.copyFile(
+				oauthCredsPath(),
+				path.join(lastActiveDir(), "oauth_creds.json"),
+			);
 		} catch {
 			// Snapshot best-effort — may not exist
 		}
@@ -154,17 +195,25 @@ export async function switchProfile(name: string): Promise<{ ok: true; email: st
 		const raw = await fs.promises.readFile(profileAccountsPath, "utf-8");
 		const parsed = JSON.parse(raw) as { active?: string };
 		if (!parsed.active) {
-			return { ok: false, error: "Profile's google_accounts.json is missing or invalid." };
+			return {
+				ok: false,
+				error: "Profile's google_accounts.json is missing or invalid.",
+			};
 		}
 
 		// Write validated content to ~/.gemini/ — single atomic write closes the
 		// TOCTOU window between validation and the copy that would re-read disk.
-		await fs.promises.writeFile(googleAccountsPath(), raw, { mode: 0o600, encoding: "utf-8" });
+		await fs.promises.writeFile(googleAccountsPath(), raw, {
+			mode: 0o600,
+			encoding: "utf-8",
+		});
 
 		const profileOauthPath = path.join(srcDir, "oauth_creds.json");
 		try {
 			const oauthContent = await fs.promises.readFile(profileOauthPath);
-			await fs.promises.writeFile(oauthCredsPath(), oauthContent, { mode: 0o600 });
+			await fs.promises.writeFile(oauthCredsPath(), oauthContent, {
+				mode: 0o600,
+			});
 		} catch (err) {
 			// No oauth_creds in profile — that's fine
 			if ((err as NodeJS.ErrnoException).code !== "ENOENT") throw err;

@@ -1,4 +1,9 @@
-import { backupProfile, getCurrentAccount, listProfiles, switchProfile } from "../accounts";
+import {
+	backupProfile,
+	getCurrentAccount,
+	listProfiles,
+	switchProfile,
+} from "../accounts";
 import type { AgyToolDetails, ProfileInfo } from "../types";
 
 export async function executeAccount(
@@ -6,7 +11,11 @@ export async function executeAccount(
 	_signal: AbortSignal | undefined,
 	_onUpdate: any,
 	_ctx: any,
-): Promise<{ content: Array<{ type: string; text: string }>; details: AgyToolDetails; isError: boolean }> {
+): Promise<{
+	content: Array<{ type: string; text: string }>;
+	details: AgyToolDetails;
+	isError: boolean;
+}> {
 	const startTime = Date.now();
 	const action = params.action as string;
 	const profile = params.profile as string | undefined;
@@ -39,7 +48,9 @@ export async function executeAccount(
 			if (currentAccount) {
 				return ok(`Active account: ${currentAccount}`);
 			}
-			return ok("No active Google account found in ~/.gemini/google_accounts.json.");
+			return ok(
+				"No active Google account found in ~/.gemini/google_accounts.json.",
+			);
 		}
 
 		case "list": {
@@ -52,7 +63,10 @@ export async function executeAccount(
 			}
 			const lines = ["Configured accounts:", ""];
 			for (const p of profiles) {
-				const date = p.backedUpAt !== "(unknown)" ? new Date(p.backedUpAt).toLocaleDateString() : "(unknown)";
+				const date =
+					p.backedUpAt !== "(unknown)"
+						? new Date(p.backedUpAt).toLocaleDateString()
+						: "(unknown)";
 				lines.push(`  ${p.name.padEnd(12)} ${p.email}  (backed up ${date})`);
 			}
 			return ok(lines.join("\n"));
@@ -60,13 +74,15 @@ export async function executeAccount(
 
 		case "backup": {
 			if (!profile) {
-				return err("The 'backup' action requires a profile name.\nExample: agy_account action:backup profile:work");
+				return err(
+					"The 'backup' action requires a profile name.\nExample: agy_account action:backup profile:work",
+				);
 			}
 			const result = await backupProfile(profile);
 			if (result.ok) {
 				return ok(
 					`Backed up current account '${result.email}' as profile '${profile}'.\n` +
-						"Files stored at ~/.pi/agy-accounts/\n" +
+						"Files stored at ~/.pi/agent/cache/pi-agy/accounts/\n" +
 						"Note: if an interactive agy session is running, it keeps its loaded credentials.\n" +
 						"New agy -p calls pick up the swapped credentials automatically.",
 				);
@@ -76,13 +92,15 @@ export async function executeAccount(
 
 		case "switch": {
 			if (!profile) {
-				return err("The 'switch' action requires a profile name.\nExample: agy_account action:switch profile:work");
+				return err(
+					"The 'switch' action requires a profile name.\nExample: agy_account action:switch profile:work",
+				);
 			}
 			const result = await switchProfile(profile);
 			if (result.ok) {
 				return ok(
 					`Switched to account '${result.email}' (profile: ${profile}).\n` +
-						"Previous state auto-snapshot to ~/.pi/agy-accounts/.last-active/\n" +
+						"Previous state auto-snapshot to ~/.pi/agent/cache/pi-agy/accounts/.last-active/\n" +
 						"Note: if an interactive agy session is running, it keeps its loaded credentials.\n" +
 						"New agy -p calls pick up the swapped credentials automatically.",
 				);
@@ -91,6 +109,8 @@ export async function executeAccount(
 		}
 
 		default:
-			return err(`Unknown action: '${action}'. Valid actions: list, current, backup, switch.`);
+			return err(
+				`Unknown action: '${action}'. Valid actions: list, current, backup, switch.`,
+			);
 	}
 }

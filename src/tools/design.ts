@@ -11,7 +11,11 @@ export async function executeDesign(
 	signal: AbortSignal | undefined,
 	onUpdate: any,
 	ctx: any,
-): Promise<{ content: Array<{ type: string; text: string }>; details: AgyToolDetails; isError: boolean }> {
+): Promise<{
+	content: Array<{ type: string; text: string }>;
+	details: AgyToolDetails;
+	isError: boolean;
+}> {
 	const workDir = params.cwd ?? ctx.cwd;
 	const framework = params.framework ?? "react-tailwind";
 	const outputFormat = params.outputFormat ?? "code-only";
@@ -23,12 +27,16 @@ export async function executeDesign(
 
 	if (params.referenceFiles?.length > 0) {
 		for (const filePath of params.referenceFiles) {
-			const absPath = path.isAbsolute(filePath) ? filePath : path.join(workDir, filePath);
+			const absPath = path.isAbsolute(filePath)
+				? filePath
+				: path.join(workDir, filePath);
 			try {
 				const content = await fs.promises.readFile(absPath, "utf-8");
 				parts.push(`<file path="${absPath}">\n${content}\n</file>`);
 			} catch (err) {
-				parts.push(`<file path="${absPath}" error="${(err as Error).message}" />`);
+				parts.push(
+					`<file path="${absPath}" error="${(err as Error).message}" />`,
+				);
 			}
 		}
 	}
@@ -42,7 +50,8 @@ export async function executeDesign(
 		timeoutSec,
 		signal,
 		onProgress: onUpdate
-			? (status: string) => onUpdate({ content: [{ type: "text" as const, text: status }] })
+			? (status: string) =>
+					onUpdate({ content: [{ type: "text" as const, text: status }] })
 			: undefined,
 	});
 
@@ -67,11 +76,17 @@ export async function executeDesign(
 	});
 
 	const isError = result.isError;
-	const responseText = isError && !text ? result.stderr || "(agy exited with no output)" : text;
+	const responseText =
+		isError && !text ? result.stderr || "(agy exited with no output)" : text;
 
 	return {
 		content: [{ type: "text", text: responseText }],
-		details: { durationMs: result.durationMs, account, exitCode: result.exitCode, model: "gemini-3.5-flash-high" },
+		details: {
+			durationMs: result.durationMs,
+			account,
+			exitCode: result.exitCode,
+			model: "gemini-3.5-flash-high",
+		},
 		isError,
 	};
 }

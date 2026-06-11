@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+- Move local usage/account state under `~/.pi/agent/cache/pi-agy/` instead of `~/.pi/agy-usage.jsonl` and `~/.pi/agy-accounts/`.
+
 ## [0.1.0] - 2026-05-20
 
 ### Added

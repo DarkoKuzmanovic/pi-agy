@@ -6,20 +6,22 @@ import type { UsageRecord, UsageSummary } from "./types";
 
 // ── Storage paths ──────────────────────────────────────────────────────────────
 
-const USAGE_DIR = path.join(os.homedir(), ".pi", "agy-usage.jsonl");
+const CACHE_DIR = path.join(os.homedir(), ".pi", "agent", "cache", "pi-agy");
+const USAGE_PATH = path.join(CACHE_DIR, "usage.jsonl");
 
 // ── Log a call ─────────────────────────────────────────────────────────────────
 
 export async function logCall(record: UsageRecord): Promise<void> {
 	const line = `${JSON.stringify(record)}\n`;
-	await fs.promises.appendFile(USAGE_DIR, line, "utf-8");
+	await fs.promises.mkdir(CACHE_DIR, { recursive: true });
+	await fs.promises.appendFile(USAGE_PATH, line, "utf-8");
 }
 
 // ── Read all records ───────────────────────────────────────────────────────────
 
 function readRecords(): UsageRecord[] {
 	try {
-		const raw = fs.readFileSync(USAGE_DIR, "utf-8");
+		const raw = fs.readFileSync(USAGE_PATH, "utf-8");
 		return raw
 			.split("\n")
 			.filter((l) => l.trim())
@@ -40,7 +42,9 @@ function readRecords(): UsageRecord[] {
 
 function getWindowStart(window: string): Date {
 	const now = new Date();
-	const utcMidnight = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
+	const utcMidnight = new Date(
+		Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()),
+	);
 	switch (window) {
 		case "today":
 			return utcMidnight;
@@ -72,7 +76,10 @@ function formatPct(value: number, total: number): number {
 
 // ── Summarize ──────────────────────────────────────────────────────────────────
 
-export function summarize(window: "today" | "week" | "month" | "all", account?: string): UsageSummary {
+export function summarize(
+	window: "today" | "week" | "month" | "all",
+	account?: string,
+): UsageSummary {
 	const records = readRecords();
 	const windowStart = getWindowStart(window);
 
@@ -93,7 +100,10 @@ export function summarize(window: "today" | "week" | "month" | "all", account?: 
 		toolMap.set(r.tool, entry);
 	}
 
-	const byTool: Record<string, { count: number; pct: number; avgLatencyMs: number }> = {};
+	const byTool: Record<
+		string,
+		{ count: number; pct: number; avgLatencyMs: number }
+	> = {};
 	for (const [tool, data] of toolMap) {
 		byTool[tool] = {
 			count: data.count,
@@ -119,7 +129,8 @@ export function summarize(window: "today" | "week" | "month" | "all", account?: 
 		}));
 
 	const totalLatency = filtered.reduce((sum, r) => sum + r.latencyMs, 0);
-	const avgLatencyMs = totalCalls > 0 ? Math.round(totalLatency / totalCalls) : 0;
+	const avgLatencyMs =
+		totalCalls > 0 ? Math.round(totalLatency / totalCalls) : 0;
 
 	const warnings: string[] = [];
 	const todayCount = records.filter((r) => {
@@ -162,8 +173,12 @@ export function checkSoftWarn(): { warn: boolean; message?: string } {
 	const todayStart = getWindowStart("today");
 	const weekStart = getWindowStart("week");
 
-	const todayCount = allRecords.filter((r) => new Date(r.ts) >= todayStart).length;
-	const weekCount = allRecords.filter((r) => new Date(r.ts) >= weekStart).length;
+	const todayCount = allRecords.filter(
+		(r) => new Date(r.ts) >= todayStart,
+	).length;
+	const weekCount = allRecords.filter(
+		(r) => new Date(r.ts) >= weekStart,
+	).length;
 
 	if (todayCount > 50) {
 		return {

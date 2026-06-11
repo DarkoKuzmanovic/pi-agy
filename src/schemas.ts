@@ -35,9 +35,16 @@ export const DesignParams = Type.Object({
 				"code-only = strip any prose, return ONLY the code. code-plus-notes = include Flash's explanation. Default code-only.",
 		}),
 	),
-	cwd: Type.Optional(Type.String({ description: "Working directory for agy. Defaults to Pi's cwd." })),
+	cwd: Type.Optional(
+		Type.String({
+			description: "Working directory for agy. Defaults to Pi's cwd.",
+		}),
+	),
 	timeoutSec: Type.Optional(
-		Type.Number({ description: "Max seconds to wait. Default 120. Maps to agy --print-timeout." }),
+		Type.Number({
+			description:
+				"Max seconds to wait. Default 120. Maps to agy --print-timeout.",
+		}),
 	),
 });
 
@@ -57,23 +64,35 @@ export const CritiqueParams = Type.Object({
 				Type.Literal("general"),
 			],
 			{
-				description: "What aspect to emphasize. Default 'general' (covers everything).",
+				description:
+					"What aspect to emphasize. Default 'general' (covers everything).",
 			},
 		),
 	),
 	question: Type.Optional(
 		Type.String({
-			description: "Specific question to answer. E.g. 'Why does this card look unbalanced on mobile?'",
+			description:
+				"Specific question to answer. E.g. 'Why does this card look unbalanced on mobile?'",
 		}),
 	),
-	cwd: Type.Optional(Type.String({ description: "Working directory for agy. Defaults to Pi's cwd." })),
-	timeoutSec: Type.Optional(Type.Number({ description: "Max seconds to wait. Default 120." })),
+	cwd: Type.Optional(
+		Type.String({
+			description: "Working directory for agy. Defaults to Pi's cwd.",
+		}),
+	),
+	timeoutSec: Type.Optional(
+		Type.Number({ description: "Max seconds to wait. Default 120." }),
+	),
 });
 
 // ── agy_image_to_ui ────────────────────────────────────────────────────────────
 
 const FidelityOption = Type.Union(
-	[Type.Literal("pixel-perfect"), Type.Literal("structural"), Type.Literal("inspired-by")],
+	[
+		Type.Literal("pixel-perfect"),
+		Type.Literal("structural"),
+		Type.Literal("inspired-by"),
+	],
 	{
 		description:
 			"pixel-perfect = match exactly. structural = match layout/components. inspired-by = use as visual reference. Default 'structural'.",
@@ -96,30 +115,47 @@ const FrameworkOption = Type.Union(
 
 export const ImageToUiParams = Type.Object({
 	imagePath: Type.String({
-		description: "Path to the image (PNG/JPG/WebP). Relative to cwd or absolute.",
+		description:
+			"Path to the image (PNG/JPG/WebP). Relative to cwd or absolute.",
 	}),
 	framework: Type.Optional(FrameworkOption),
 	fidelity: Type.Optional(FidelityOption),
 	additionalNotes: Type.Optional(
 		Type.String({
-			description: "Extra instructions or constraints for the generated component.",
+			description:
+				"Extra instructions or constraints for the generated component.",
 		}),
 	),
-	cwd: Type.Optional(Type.String({ description: "Working directory for agy. Defaults to Pi's cwd." })),
-	timeoutSec: Type.Optional(Type.Number({ description: "Max seconds to wait. Default 120." })),
+	cwd: Type.Optional(
+		Type.String({
+			description: "Working directory for agy. Defaults to Pi's cwd.",
+		}),
+	),
+	timeoutSec: Type.Optional(
+		Type.Number({ description: "Max seconds to wait. Default 120." }),
+	),
 });
 
 // ── agy_usage ──────────────────────────────────────────────────────────────────
 
 export const UsageParams = Type.Object({
 	window: Type.Optional(
-		Type.Union([Type.Literal("today"), Type.Literal("week"), Type.Literal("month"), Type.Literal("all")], {
-			description: "Time window to summarize. Default 'week'.",
-		}),
+		Type.Union(
+			[
+				Type.Literal("today"),
+				Type.Literal("week"),
+				Type.Literal("month"),
+				Type.Literal("all"),
+			],
+			{
+				description: "Time window to summarize. Default 'week'.",
+			},
+		),
 	),
 	account: Type.Optional(
 		Type.String({
-			description: "Filter to a specific account profile name. Default: current active.",
+			description:
+				"Filter to a specific account profile name. Default: current active.",
 		}),
 	),
 });
@@ -127,10 +163,18 @@ export const UsageParams = Type.Object({
 // ── agy_account ────────────────────────────────────────────────────────────────
 
 export const AccountParams = Type.Object({
-	action: Type.Union([Type.Literal("list"), Type.Literal("current"), Type.Literal("backup"), Type.Literal("switch")], {
-		description:
-			"Profile management action. 'list' = list configured profiles. 'current' = show active account. 'backup' = backup current account as a named profile. 'switch' = switch to a previously-backed-up profile.",
-	}),
+	action: Type.Union(
+		[
+			Type.Literal("list"),
+			Type.Literal("current"),
+			Type.Literal("backup"),
+			Type.Literal("switch"),
+		],
+		{
+			description:
+				"Profile management action. 'list' = list configured profiles. 'current' = show active account. 'backup' = backup current account as a named profile. 'switch' = switch to a previously-backed-up profile.",
+		},
+	),
 	profile: Type.Optional(
 		Type.String({
 			description: "Profile name for backup/switch. e.g. 'work' or 'personal'.",

@@ -36,11 +36,11 @@ old one — never edit the old entry.
 
 ---
 
-## M0-c: Profile-based account swap via `~/.pi/agy-accounts/` (not env vars or auth flow)
+## M0-c: Profile-based account swap via `~/.pi/agent/cache/pi-agy/accounts/` (not env vars or auth flow)
 
 **Date:** 2026-05-20
 **Context:** User has personal + work Google accounts for Antigravity. agy reads OAuth credentials from `~/.gemini/oauth_creds.json` and `~/.gemini/google_accounts.json` on each call. No native multi-account support; only third-party tools (aisw, AntigravityManager) handle this.
-**Decision:** Implement `agy_account` with actions `list`/`current`/`backup`/`switch`. Backup copies the two `~/.gemini/*.json` files into `~/.pi/agy-accounts/<profile>/` at file mode 0600. Switch reads the named profile and writes content back into `~/.gemini/` via `writeFile { mode: 0o600 }` (atomic, no race window). Auto-snapshot the current state to `.last-active/` before any switch for rollback.
+**Decision:** Implement `agy_account` with actions `list`/`current`/`backup`/`switch`. Backup copies the two `~/.gemini/*.json` files into `~/.pi/agent/cache/pi-agy/accounts/<profile>/` at file mode 0600. Switch reads the named profile and writes content back into `~/.gemini/` via `writeFile { mode: 0o600 }` (atomic, no race window). Auto-snapshot the current state to `.last-active/` before any switch for rollback.
 **Rationale:** agy reads creds from `~/.gemini/` directly per call, so profile swap requires zero changes to agy itself. Profile names are strictly validated (`/^[a-zA-Z0-9_-]+$/`) to prevent path traversal — added as P0 fix after adversarial review found `name = "../evil"` could escape the sandbox.
 **Alternatives considered:**
 - *`GEMINI_HOME` env var per call* — agy 1.0.0 doesn't honor it.
@@ -54,7 +54,7 @@ old one — never edit the old entry.
 
 **Date:** 2026-05-20
 **Context:** Antigravity's free tier was slashed ~92% in March 2026; weekly quota cycle. Real quota lives behind Google API — invisible to pi-agy. User had to choose between hard cap (interrupt mid-task) and soft warn (informational).
-**Decision:** Append every call to `~/.pi/agy-usage.jsonl` (one JSON object per line: timestamp, tool, account, latency, prompt size, response size, exit code). The `agy_usage` tool summarizes by window (today/week/month/all). Soft-warn fires inline at >50 calls/day or >200/week but `never refuses` the call.
+**Decision:** Append every call to `~/.pi/agent/cache/pi-agy/usage.jsonl` (one JSON object per line: timestamp, tool, account, latency, prompt size, response size, exit code). The `agy_usage` tool summarizes by window (today/week/month/all). Soft-warn fires inline at >50 calls/day or >200/week but `never refuses` the call.
 **Rationale:** Refusing mid-task is worse than overage. Local counter is approximate (doesn't see cross-source agy usage) but informs the user enough to switch accounts or pace work. Aligns with the vision invariant: frictionless UX > strict quota policing.
 **Alternatives considered:**
 - *Hard cap at 50/day* — interrupts real work, violates frictionless invariant.

@@ -12,7 +12,7 @@ pi-agy makes Google's Antigravity CLI (running Gemini 3.5 Flash) feel like a nat
 - **agy_critique** — single-file design/UX review with focus filters (`accessibility`, `visual-hierarchy`, `responsive`, `performance`)
 - **agy_image_to_ui** — mockup→component conversion via agy's `--add-dir` workaround (best-effort; CLI image reliability unverified)
 - **agy_usage** — local call counter exposed as a tool, soft-warn at 50/day or 200/week, **never refuses**
-- **agy_account** — list / current / backup / switch Google account profiles via `~/.pi/agy-accounts/` swap, 0600 file mode, auto-snapshot to `.last-active/`
+- **agy_account** — list / current / backup / switch Google account profiles via `~/.pi/agent/cache/pi-agy/accounts/` swap, 0600 file mode, auto-snapshot to `.last-active/`
 
 **Out:**
 

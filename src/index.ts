@@ -21,7 +21,13 @@
 
 import type { ExtensionAPI } from "@earendil-works/pi-coding-agent";
 import { renderCall, renderResult } from "./render";
-import { AccountParams, CritiqueParams, DesignParams, ImageToUiParams, UsageParams } from "./schemas";
+import {
+	AccountParams,
+	CritiqueParams,
+	DesignParams,
+	ImageToUiParams,
+	UsageParams,
+} from "./schemas";
 import { executeAccount } from "./tools/account";
 import { executeCritique } from "./tools/critique";
 import { executeDesign } from "./tools/design";

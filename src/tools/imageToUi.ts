@@ -6,27 +6,49 @@ import { designSystemPrompt, imageToUiInstructions } from "../prompts";
 import type { AgyToolDetails, SpawnAgyResult } from "../types";
 import { logCall } from "../usage";
 
-const SUPPORTED_EXTENSIONS = new Set([".png", ".jpg", ".jpeg", ".webp", ".gif"]);
+const SUPPORTED_EXTENSIONS = new Set([
+	".png",
+	".jpg",
+	".jpeg",
+	".webp",
+	".gif",
+]);
 
 export async function executeImageToUi(
 	params: any,
 	signal: AbortSignal | undefined,
 	onUpdate: any,
 	ctx: any,
-): Promise<{ content: Array<{ type: string; text: string }>; details: AgyToolDetails; isError: boolean }> {
+): Promise<{
+	content: Array<{ type: string; text: string }>;
+	details: AgyToolDetails;
+	isError: boolean;
+}> {
 	const workDir = params.cwd ?? ctx.cwd;
 	const framework = params.framework ?? "react-tailwind";
 	const fidelity = params.fidelity ?? "structural";
 	const timeoutSec = params.timeoutSec ?? 120;
 
-	const absPath = path.isAbsolute(params.imagePath) ? params.imagePath : path.join(workDir, params.imagePath);
+	const absPath = path.isAbsolute(params.imagePath)
+		? params.imagePath
+		: path.join(workDir, params.imagePath);
 
 	try {
 		await fs.promises.access(absPath, fs.constants.R_OK);
 	} catch {
 		return {
-			content: [{ type: "text", text: `Image file not found or not readable: ${absPath}` }],
-			details: { durationMs: 0, account: null, exitCode: 1, model: "gemini-3.5-flash-high" },
+			content: [
+				{
+					type: "text",
+					text: `Image file not found or not readable: ${absPath}`,
+				},
+			],
+			details: {
+				durationMs: 0,
+				account: null,
+				exitCode: 1,
+				model: "gemini-3.5-flash-high",
+			},
 			isError: true,
 		};
 	}
@@ -40,7 +62,12 @@ export async function executeImageToUi(
 					text: `Unsupported image format '${ext}'. Supported: ${Array.from(SUPPORTED_EXTENSIONS).join(", ")}`,
 				},
 			],
-			details: { durationMs: 0, account: null, exitCode: 1, model: "gemini-3.5-flash-high" },
+			details: {
+				durationMs: 0,
+				account: null,
+				exitCode: 1,
+				model: "gemini-3.5-flash-high",
+			},
 			isError: true,
 		};
 	}
@@ -67,7 +94,8 @@ export async function executeImageToUi(
 		addDirs: [imageDir],
 		signal,
 		onProgress: onUpdate
-			? (status: string) => onUpdate({ content: [{ type: "text" as const, text: status }] })
+			? (status: string) =>
+					onUpdate({ content: [{ type: "text" as const, text: status }] })
 			: undefined,
 	});
 
@@ -102,7 +130,12 @@ export async function executeImageToUi(
 
 	return {
 		content: [{ type: "text", text: responseText }],
-		details: { durationMs: result.durationMs, account, exitCode: result.exitCode, model: "gemini-3.5-flash-high" },
+		details: {
+			durationMs: result.durationMs,
+			account,
+			exitCode: result.exitCode,
+			model: "gemini-3.5-flash-high",
+		},
 		isError,
 	};
 }

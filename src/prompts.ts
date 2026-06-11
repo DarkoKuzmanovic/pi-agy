@@ -2,7 +2,10 @@
 
 // ── agy_design: framework-specific system prompts ──────────────────────────────
 
-export function designSystemPrompt(framework: string, outputFormat: string): string {
+export function designSystemPrompt(
+	framework: string,
+	outputFormat: string,
+): string {
 	const parts: string[] = [];
 
 	switch (framework) {
@@ -66,7 +69,10 @@ export function designSystemPrompt(framework: string, outputFormat: string): str
 	}
 
 	if (outputFormat === "code-only") {
-		parts.push("", "Output ONLY raw code. No markdown fences. No prose. No explanation. Code only.");
+		parts.push(
+			"",
+			"Output ONLY raw code. No markdown fences. No prose. No explanation. Code only.",
+		);
 	}
 
 	return parts.join("\n");

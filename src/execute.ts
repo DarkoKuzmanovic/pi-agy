@@ -4,7 +4,11 @@ import type { SpawnAgyOptions, SpawnAgyResult } from "./types";
 
 // ── Execute agy -p ─────────────────────────────────────────────────────────────
 
-const NOISE_PREFIXES = ["Loaded cached credentials", "Skill ", "antigravity-cli"];
+const NOISE_PREFIXES = [
+	"Loaded cached credentials",
+	"Skill ",
+	"antigravity-cli",
+];
 
 function isNoise(line: string): boolean {
 	const trimmed = line.trim();
@@ -12,12 +16,21 @@ function isNoise(line: string): boolean {
 	return NOISE_PREFIXES.some((prefix) => trimmed.includes(prefix));
 }
 
-export function spawnAgy(prompt: string, opts: SpawnAgyOptions): Promise<SpawnAgyResult> {
+export function spawnAgy(
+	prompt: string,
+	opts: SpawnAgyOptions,
+): Promise<SpawnAgyResult> {
 	return new Promise<SpawnAgyResult>((resolve) => {
 		const agyPath = findAgyCli();
 		const timeoutStr = `${opts.timeoutSec}s`;
 
-		const args: string[] = ["-p", prompt, "--dangerously-skip-permissions", "--print-timeout", timeoutStr];
+		const args: string[] = [
+			"-p",
+			prompt,
+			"--dangerously-skip-permissions",
+			"--print-timeout",
+			timeoutStr,
+		];
 		if (opts.addDirs && opts.addDirs.length > 0) {
 			for (const dir of opts.addDirs) {
 				args.push("--add-dir", dir);
@@ -57,7 +70,8 @@ export function spawnAgy(prompt: string, opts: SpawnAgyOptions): Promise<SpawnAg
 
 		proc.on("close", (code) => {
 			clearInterval(progressInterval);
-			if (onAbort && opts.signal) opts.signal.removeEventListener("abort", onAbort);
+			if (onAbort && opts.signal)
+				opts.signal.removeEventListener("abort", onAbort);
 			if (killTimer) clearTimeout(killTimer);
 
 			const durationMs = Date.now() - startTime;

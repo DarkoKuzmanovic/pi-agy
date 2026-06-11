@@ -6,17 +6,26 @@ export async function executeUsage(
 	_signal: AbortSignal | undefined,
 	_onUpdate: any,
 	_ctx: any,
-): Promise<{ content: Array<{ type: string; text: string }>; details: AgyToolDetails; isError: boolean }> {
+): Promise<{
+	content: Array<{ type: string; text: string }>;
+	details: AgyToolDetails;
+	isError: boolean;
+}> {
 	const startTime = Date.now();
 	const window = params.window ?? "week";
 	const account = params.account ?? undefined;
 
-	const summary = summarize(window as "today" | "week" | "month" | "all", account);
+	const summary = summarize(
+		window as "today" | "week" | "month" | "all",
+		account,
+	);
 
 	const lines: string[] = [];
 
 	const accountLabel = summary.account ?? "(unknown)";
-	lines.push(`pi-agy usage \u2014 ${summary.windowLabel} (account: ${accountLabel})`);
+	lines.push(
+		`pi-agy usage \u2014 ${summary.windowLabel} (account: ${accountLabel})`,
+	);
 	lines.push("");
 
 	const toolNames = Object.keys(summary.byTool).sort();
@@ -39,13 +48,17 @@ export async function executeUsage(
 	if (summary.byDay.length > 0) {
 		for (const day of summary.byDay) {
 			const date = new Date(day.date);
-			const dow = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"][date.getDay()];
+			const dow = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"][
+				date.getDay()
+			];
 			lines.push(`  ${dow}  ${day.bar}  ${day.count}`);
 		}
 		lines.push("");
 	}
 
-	lines.push("Note: this is pi-agy's local counter only. For Google-side quota, run /usage in the agy TUI.");
+	lines.push(
+		"Note: this is pi-agy's local counter only. For Google-side quota, run /usage in the agy TUI.",
+	);
 
 	if (summary.warnings.length > 0) {
 		lines.push("");
@@ -56,7 +69,11 @@ export async function executeUsage(
 
 	return {
 		content: [{ type: "text", text: lines.join("\n") }],
-		details: { durationMs: Date.now() - startTime, account: summary.account ?? null, exitCode: 0 },
+		details: {
+			durationMs: Date.now() - startTime,
+			account: summary.account ?? null,
+			exitCode: 0,
+		},
 		isError: false,
 	};
 }
